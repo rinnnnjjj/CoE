@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Events — CBR/CBID Centre of Excellence for Asia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<style>
+  :root{
+    --bg:#FBFAF7;
+    --ink:#17242A;
+    --muted:#5B6A6D;
+    --line:#DEDAD0;
+    --teal:#0F6E5C;
+    --teal-ink:#0B4F42;
+    --ochre:#A6743D;
+    --card-bg:#FFFFFF;
+    --focus:#1857A8;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.5;
+  }
+  a{color:var(--teal-ink);}
+  a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible{
+    outline:3px solid var(--focus);
+    outline-offset:2px;
+  }
+  .wrap{
+    max-width:920px;
+    margin:0 auto;
+    padding:2.5rem 1.25rem 5rem;
+  }
+  header.masthead{
+    border-bottom:2px solid var(--ink);
+    padding-bottom:1.5rem;
+    margin-bottom:1.75rem;
+  }
+  header.masthead h1{
+    font-family:"Source Serif 4",Georgia,serif;
+    font-weight:700;
+    font-size:clamp(1.6rem,3.4vw,2.35rem);
+    margin:0 0 .4rem;
+    letter-spacing:-0.01em;
+  }
+  header.masthead p{
+    margin:0;
+    max-width:60ch;
+    color:var(--muted);
+    font-size:1rem;
+  }
+
+  .toolbar{
+    display:flex;
+    flex-wrap:wrap;
+    gap:.6rem;
+    align-items:center;
+    margin-bottom:1.5rem;
+  }
+  .toolbar input[type="search"]{
+    flex:1 1 220px;
+    padding:.55rem .7rem;
+    border:1px solid var(--line);
+    border-radius:3px;
+    font-size:.95rem;
+    background:var(--card-bg);
+    color:var(--ink);
+  }
+  .toolbar select{
+    padding:.55rem .6rem;
+    border:1px solid var(--line);
+    border-radius:3px;
+    font-size:.9rem;
+    background:var(--card-bg);
+    color:var(--ink);
+  }
+
+  .tabs{
+    display:flex;
+    gap:0;
+    border-bottom:1px solid var(--line);
+    margin-bottom:1.75rem;
+  }
+  .tabs button{
+    font:inherit;
+    font-size:.95rem;
+    font-weight:600;
+    background:none;
+    border:none;
+    padding:.7rem 1.1rem .6rem;
+    cursor:pointer;
+    color:var(--muted);
+    border-bottom:3px solid transparent;
+    margin-bottom:-1px;
+  }
+  .tabs button[aria-selected="true"]{
+    color:var(--ink);
+    border-bottom-color:var(--teal);
+  }
+
+  ul.event-list{list-style:none;margin:0;padding:0;}
+  .event-row{
+    display:flex;
+    gap:1.1rem;
+    padding:1.35rem 0;
+    border-bottom:1px solid var(--line);
+    align-items:flex-start;
+  }
+  .event-row:first-child{padding-top:0;}
+
+  .datestamp{
+    flex:0 0 64px;
+    text-align:center;
+    padding-top:.15rem;
+  }
+  .datestamp .month{
+    font-size:.72rem;
+    font-weight:700;
+    letter-spacing:.04em;
+    color:var(--teal-ink);
+  }
+  .datestamp .day{
+    font-family:"Source Serif 4",Georgia,serif;
+    font-size:1.9rem;
+    font-weight:700;
+    line-height:1.05;
+    color:var(--ink);
+  }
+  .datestamp .year{
+    font-size:.72rem;
+    color:var(--muted);
+  }
+
+  .event-main{flex:1 1 auto; min-width:0;}
+  .event-main h2{
+    font-family:"Source Serif 4",Georgia,serif;
+    font-size:1.15rem;
+    font-weight:600;
+    margin:0 0 .35rem;
+    line-height:1.3;
+  }
+  .tags{
+    display:flex;
+    flex-wrap:wrap;
+    gap:.4rem;
+    margin-bottom:.5rem;
+  }
+  .tag{
+    font-size:.72rem;
+    font-weight:600;
+    padding:.15rem .5rem;
+    border:1px solid var(--line);
+    border-radius:100px;
+    color:var(--muted);
+    white-space:nowrap;
+  }
+  .tag.format{color:var(--teal-ink);border-color:var(--teal);}
+  .tag.theme{color:var(--ochre);border-color:var(--ochre);}
+
+  .event-main p.desc{
+    margin:.3rem 0 .55rem;
+    color:var(--ink);
+    font-size:.95rem;
+  }
+  .event-meta-line{
+    font-size:.85rem;
+    color:var(--muted);
+    margin:0 0 .5rem;
+  }
+  .event-links{
+    display:flex;
+    flex-wrap:wrap;
+    gap:1rem;
+    font-size:.85rem;
+    font-weight:600;
+  }
+  .event-links a, .event-links button.link-btn{
+    font:inherit;
+    color:var(--teal-ink);
+    text-decoration:none;
+    border-bottom:1px solid transparent;
+    background:none;
+    border-top:none;border-left:none;border-right:none;
+    padding:0;
+    cursor:pointer;
+  }
+  .event-links a:hover, .event-links a:focus-visible,
+  .event-links button.link-btn:hover, .event-links button.link-btn:focus-visible{
+    border-bottom-color:var(--teal-ink);
+  }
+
+  .poster-thumb{
+    flex:0 0 96px;
+  }
+  .poster-thumb img{
+    width:96px;
+    height:96px;
+    object-fit:cover;
+    border:1px solid var(--line);
+    border-radius:4px;
+    display:block;
+  }
+
+  .empty-state{
+    padding:2.5rem 0;
+    color:var(--muted);
+    font-size:.98rem;
+    border-bottom:1px solid var(--line);
+  }
+  .status-line{
+    font-size:.85rem;
+    color:var(--muted);
+    margin-bottom:1rem;
+  }
+
+  @media (max-width:560px){
+    .event-row{flex-wrap:wrap;}
+    .poster-thumb{order:3; flex:0 0 100%;}
+    .poster-thumb img{width:100%; height:140px;}
+    .datestamp{flex:0 0 52px;}
+  }
+
+  @media (prefers-reduced-motion:no-preference){
+    .event-row{transition:background-color .15s ease;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <h1>Upcoming events across the network</h1>
+    <p>Trainings, webinars and convenings shared by members of the CBR/CBID Centre of Excellence for Asia.</p>
+  </header>
+
+  <div class="toolbar" role="search">
+    <label for="q" class="visually-hidden" style="position:absolute;left:-9999px;">Search events</label>
+    <input type="search" id="q" placeholder="Search by title or keyword…">
+    <select id="country"><option value="">All countries</option></select>
+    <select id="theme"><option value="">All themes</option></select>
+    <select id="format"><option value="">All formats</option></select>
+  </div>
+
+  <div class="tabs" role="tablist" aria-label="Event timing">
+    <button role="tab" id="tab-upcoming" aria-selected="true" aria-controls="panel-events">Upcoming</button>
+    <button role="tab" id="tab-past" aria-selected="false" aria-controls="panel-events">Past</button>
+  </div>
+
+  <p class="status-line" id="status">Loading events…</p>
+
+  <div id="panel-events" role="tabpanel">
+    <ul class="event-list" id="event-list"></ul>
+  </div>
+
+</div>
+
+<script>
+/* ============================================================
+   1. PASTE YOUR PUBLISHED "Published" TAB CSV LINK BELOW
+   (Step-by-step instructions are in the chat guide)
+   ============================================================ */
+const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSkjOHDpnu8xyVNjGRQLNxE-fyWTvQH15NrBZorXD_hW7a0V7hAR5FSL0Xxz_5HonedYG91YQN-Utpj/pub?gid=479167724&single=true&output=csv";
+
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+function parseFlexibleDate(str){
+  if(!str) return null;
+  str = String(str).trim();
+  // ISO: 2026-10-15
+  let m = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if(m) return new Date(+m[1], +m[2]-1, +m[3]);
+  // US: 10/15/2026
+  m = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if(m) return new Date(+m[3], +m[1]-1, +m[2]);
+  const d = new Date(str);
+  return isNaN(d) ? null : d;
+}
+
+function escapeHtml(s){
+  return String(s || "").replace(/[&<>"']/g, c => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[c]));
+}
+
+function fieldsFromRow(row){
+  return {
+    title: row["Event title"] || "",
+    start: parseFlexibleDate(row["Start date"]),
+    end: parseFlexibleDate(row["End date"]),
+    time: row["Time + timezone"] || "",
+    format: row["Format"] || "",
+    location: row["Location / registration link"] || "",
+    country: row["Country"] || "",
+    description: row["Description"] || "",
+    theme: row["Theme"] || "",
+    language: row["Event language"] || "",
+    poster: row["Poster link"] || "",
+    posterAlt: row["Poster alt text"] || "",
+    submitter: row["Submitter name"] || "",
+    org: row["Submitter organization"] || ""
+  };
+}
+
+function toIcsDate(d){
+  return d.toISOString().replace(/[-:]/g,"").split(".")[0]+"Z";
+}
+
+function buildIcsHref(ev){
+  const start = ev.start || new Date();
+  const end = ev.end || start;
+  const ics = [
+    "BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//CoE Events//EN","BEGIN:VEVENT",
+    "UID:"+Date.now()+"@coe-events",
+    "DTSTAMP:"+toIcsDate(new Date()),
+    "DTSTART;VALUE=DATE:"+start.toISOString().slice(0,10).replace(/-/g,""),
+    "DTEND;VALUE=DATE:"+end.toISOString().slice(0,10).replace(/-/g,""),
+    "SUMMARY:"+ev.title.replace(/[\n,;]/g," "),
+    "LOCATION:"+ev.location.replace(/[\n,;]/g," "),
+    "DESCRIPTION:"+ev.description.replace(/[\n,;]/g," "),
+    "END:VEVENT","END:VCALENDAR"
+  ].join("\r\n");
+  return "data:text/calendar;charset=utf-8,"+encodeURIComponent(ics);
+}
+
+function rowIsPoster(url){
+  return url && /^https?:\/\//i.test(url);
+}
+
+let ALL_EVENTS = [];
+let activeTab = "upcoming";
+
+function populateFilterOptions(events){
+  const countries = [...new Set(events.map(e=>e.country).filter(Boolean))].sort();
+  const themes = [...new Set(events.map(e=>e.theme).filter(Boolean))].sort();
+  const formats = [...new Set(events.map(e=>e.format).filter(Boolean))].sort();
+
+  const fill = (sel, values) => {
+    values.forEach(v=>{
+      const opt = document.createElement("option");
+      opt.value = v; opt.textContent = v;
+      sel.appendChild(opt);
+    });
+  };
+  fill(document.getElementById("country"), countries);
+  fill(document.getElementById("theme"), themes);
+  fill(document.getElementById("format"), formats);
+}
+
+function currentFilters(){
+  return {
+    q: document.getElementById("q").value.trim().toLowerCase(),
+    country: document.getElementById("country").value,
+    theme: document.getElementById("theme").value,
+    format: document.getElementById("format").value
+  };
+}
+
+function render(){
+  const list = document.getElementById("event-list");
+  const status = document.getElementById("status");
+  const f = currentFilters();
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  let events = ALL_EVENTS.filter(e=>{
+    if(f.q && !(e.title.toLowerCase().includes(f.q) || e.description.toLowerCase().includes(f.q))) return false;
+    if(f.country && e.country !== f.country) return false;
+    if(f.theme && e.theme !== f.theme) return false;
+    if(f.format && e.format !== f.format) return false;
+    return true;
+  });
+
+  if(activeTab === "upcoming"){
+    events = events.filter(e => !e.end || e.end >= today).sort((a,b)=> (a.start||0) - (b.start||0));
+  } else {
+    events = events.filter(e => e.end && e.end < today).sort((a,b)=> (b.start||0) - (a.start||0));
+  }
+
+  status.textContent = events.length
+    ? `${events.length} event${events.length===1?"":"s"}`
+    : "No events match right now.";
+
+  list.innerHTML = "";
+  if(events.length === 0){
+    const li = document.createElement("li");
+    li.className = "empty-state";
+    li.textContent = activeTab === "upcoming"
+      ? "No upcoming events yet. Check back soon, or adjust the filters above."
+      : "No past events match these filters.";
+    list.appendChild(li);
+    return;
+  }
+
+  events.forEach(e=>{
+    const li = document.createElement("li");
+    li.className = "event-row";
+
+    const monthLabel = e.start ? MONTHS[e.start.getMonth()] : "—";
+    const dayLabel = e.start ? e.start.getDate() : "?";
+    const yearLabel = e.start ? e.start.getFullYear() : "";
+
+    const posterHtml = rowIsPoster(e.poster)
+      ? `<div class="poster-thumb"><a href="${escapeHtml(e.poster)}" target="_blank" rel="noopener">
+           <img src="${escapeHtml(e.poster)}" alt="${escapeHtml(e.posterAlt || e.title + ' poster')}" loading="lazy">
+         </a></div>`
+      : "";
+
+    const registerHtml = /^https?:\/\//i.test(e.location)
+      ? `<a href="${escapeHtml(e.location)}" target="_blank" rel="noopener">Register / details</a>`
+      : "";
+
+    li.innerHTML = `
+      <div class="datestamp">
+        <div class="month">${monthLabel}</div>
+        <div class="day">${dayLabel}</div>
+        <div class="year">${yearLabel}</div>
+      </div>
+      <div class="event-main">
+        <h2>${escapeHtml(e.title)}</h2>
+        <div class="tags">
+          ${e.format ? `<span class="tag format">${escapeHtml(e.format)}</span>` : ""}
+          ${e.theme ? `<span class="tag theme">${escapeHtml(e.theme)}</span>` : ""}
+          ${e.country ? `<span class="tag">${escapeHtml(e.country)}</span>` : ""}
+        </div>
+        <p class="event-meta-line">
+          ${e.time ? escapeHtml(e.time) : ""}${e.time && !/^https?:\/\//i.test(e.location) && e.location ? " · " : ""}${!/^https?:\/\//i.test(e.location) ? escapeHtml(e.location) : ""}
+        </p>
+        <p class="desc">${escapeHtml(e.description)}</p>
+        <div class="event-links">
+          ${registerHtml}
+          <a href="${buildIcsHref(e)}" download="${escapeHtml(e.title || 'event')}.ics">Add to calendar</a>
+          ${e.org ? `<span style="color:var(--muted);font-weight:400;">Submitted by ${escapeHtml(e.org)}</span>` : ""}
+        </div>
+      </div>
+      ${posterHtml}
+    `;
+    list.appendChild(li);
+  });
+}
+
+function wireControls(){
+  ["q","country","theme","format"].forEach(id=>{
+    document.getElementById(id).addEventListener("input", render);
+    document.getElementById(id).addEventListener("change", render);
+  });
+  const tabUp = document.getElementById("tab-upcoming");
+  const tabPast = document.getElementById("tab-past");
+  tabUp.addEventListener("click", ()=>{
+    activeTab="upcoming"; tabUp.setAttribute("aria-selected","true"); tabPast.setAttribute("aria-selected","false"); render();
+  });
+  tabPast.addEventListener("click", ()=>{
+    activeTab="past"; tabPast.setAttribute("aria-selected","true"); tabUp.setAttribute("aria-selected","false"); render();
+  });
+}
+
+function loadEvents(){
+  const status = document.getElementById("status");
+
+  if(!CSV_URL || CSV_URL.indexOf("PASTE_YOUR") === 0){
+    status.textContent = "Setup needed: paste your published-sheet CSV link into CSV_URL in the code.";
+    return;
+  }
+
+  Papa.parse(CSV_URL, {
+    download: true,
+    header: true,
+    skipEmptyLines: true,
+    complete: function(results){
+      const rows = results.data.filter(r => (r["Event title"] || "").trim() !== "");
+      ALL_EVENTS = rows.map(fieldsFromRow);
+      populateFilterOptions(ALL_EVENTS);
+      render();
+    },
+    error: function(err){
+      status.textContent = "Could not load the events sheet. Check the CSV link and that the sheet is published to the web.";
+      console.error(err);
+    }
+  });
+}
+
+wireControls();
+loadEvents();
+</script>
+</body>
+</html>
