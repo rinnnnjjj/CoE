@@ -196,21 +196,17 @@
     font-size:.78rem;
   }
   /* ---------- Date stamp (no date info at all — e.g. a report) ---------- */
-  .datestamp .badge-flag{
-    display:inline-block;
-    font-size:.6rem;
-    font-weight:700;
-    letter-spacing:.03em;
-    text-transform:uppercase;
-    color:#fff;
-    padding:.24rem .4rem;
-    border-radius:3px;
-    line-height:1.3;
+  .datestamp .no-date-icon{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:34px;
+    height:34px;
+    margin:0 auto;
+    border-radius:6px;
+    background:#F0EEE7;
+    color:var(--muted);
   }
-  .badge-flag.type-event{background:var(--teal);}
-  .badge-flag.type-report{background:var(--slate);}
-  .badge-flag.type-cfp{background:var(--ochre);}
-  .badge-flag.type-other{background:var(--plum);}
 
   .event-main{flex:1 1 auto; min-width:0;}
   .event-main h2{
@@ -585,8 +581,11 @@ function render(){
         <div class="badge-open">OPEN NOW</div>
         <div class="deadline-till">until<br><b>${MONTHS[e.end.getMonth()]} ${e.end.getDate()}, ${e.end.getFullYear()}</b></div>`;
     } else {
-      // No dates at all — common for reports with no fixed timing.
-      dateStampHtml = `<div class="badge-flag ${typeClass(e.type)}">${escapeHtml(e.type)}</div>`;
+      // No dates at all — common for a report with no fixed timing.
+      // The active tab already says what type this is, so just a quiet icon here.
+      dateStampHtml = `<div class="no-date-icon" aria-hidden="true">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 1.5h6l2.5 2.5v10a1 1 0 0 1-1 1h-7.5a1 1 0 0 1-1-1v-11a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M10 1.5V4a1 1 0 0 0 1 1h2.5" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+      </div>`;
     }
 
     const posterHtml = rowIsPoster(e.poster)
@@ -608,7 +607,7 @@ function render(){
         <h2>${escapeHtml(e.title)}</h2>
         ${e.org ? `<p class="submitted-by">Submitted by ${escapeHtml(e.org)}</p>` : ""}
         <div class="tags">
-          <span class="tag ${typeClass(e.type)}">${escapeHtml(e.type)}</span>
+          ${activeCategory === "type-other" ? `<span class="tag ${typeClass(e.type)}">${escapeHtml(e.type)}</span>` : ""}
           ${e.format ? `<span class="tag format">${escapeHtml(e.format)}</span>` : ""}
           ${e.theme ? `<span class="tag theme">${escapeHtml(e.theme)}</span>` : ""}
           ${e.country ? `<span class="tag">${escapeHtml(e.country)}</span>` : ""}
