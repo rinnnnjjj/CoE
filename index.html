@@ -88,6 +88,35 @@
     color:var(--ink);
   }
 
+  /* ---------- Primary tabs: by content type ---------- */
+  .tabs-primary{
+    display:flex;
+    flex-wrap:wrap;
+    gap:.5rem;
+    margin-bottom:1rem;
+  }
+  .tabs-primary button{
+    font:inherit;
+    font-size:.9rem;
+    font-weight:700;
+    background:#fff;
+    border:1.5px solid var(--line);
+    border-radius:100px;
+    padding:.5rem 1.05rem;
+    cursor:pointer;
+    color:var(--muted);
+  }
+  .tabs-primary button[aria-selected="true"]{
+    color:#fff;
+    border-color:var(--ink);
+    background:var(--ink);
+  }
+  .tabs-primary button:hover:not([aria-selected="true"]){
+    border-color:var(--ink);
+    color:var(--ink);
+  }
+
+  /* ---------- Secondary tabs: timing, nested within a type ---------- */
   .tabs{
     display:flex;
     gap:0;
@@ -96,11 +125,11 @@
   }
   .tabs button{
     font:inherit;
-    font-size:.95rem;
+    font-size:.88rem;
     font-weight:600;
     background:none;
     border:none;
-    padding:.7rem 1.1rem .6rem;
+    padding:.6rem .95rem .55rem;
     cursor:pointer;
     color:var(--muted);
     border-bottom:3px solid transparent;
@@ -314,10 +343,11 @@
     <p>Trainings, webinars, calls for papers and reports shared by members of the CBR/CBID Centre of Excellence for Asia.</p>
   </header>
 
+  <div class="tabs-primary" role="tablist" aria-label="Content type" id="tabs-primary"></div>
+
   <div class="toolbar" role="search">
     <label for="q" class="visually-hidden" style="position:absolute;left:-9999px;">Search</label>
     <input type="search" id="q" placeholder="Search by title or keyword…">
-    <select id="type"><option value="">All types</option></select>
     <select id="country"><option value="">All countries</option></select>
     <select id="theme"><option value="">All themes</option></select>
     <select id="format"><option value="">All formats</option></select>
@@ -387,6 +417,15 @@ function typeClass(type){
   return "type-other";
 }
 
+// Order and labels for the primary (content-type) tabs.
+const CATEGORY_META = {
+  "type-event":  { label: "Events" },
+  "type-cfp":    { label: "Calls for Papers" },
+  "type-report": { label: "Reports" },
+  "type-other":  { label: "Other" }
+};
+const CATEGORY_ORDER = ["type-event","type-cfp","type-report","type-other"];
+
 function fieldsFromRow(row){
   return {
     type: (row["Type"] || "").trim() || "Other",
@@ -435,30 +474,55 @@ function rowIsPoster(url){
 
 let ALL_EVENTS = [];
 let activeTab = "upcoming";
+let activeCategory = null;
 
 function populateFilterOptions(events){
-  const types = [...new Set(events.map(e=>e.type).filter(Boolean))].sort();
   const countries = [...new Set(events.map(e=>e.country).filter(Boolean))].sort();
   const themes = [...new Set(events.map(e=>e.theme).filter(Boolean))].sort();
   const formats = [...new Set(events.map(e=>e.format).filter(Boolean))].sort();
 
   const fill = (sel, values) => {
+    sel.querySelectorAll("option:not(:first-child)").forEach(o=>o.remove());
     values.forEach(v=>{
       const opt = document.createElement("option");
       opt.value = v; opt.textContent = v;
       sel.appendChild(opt);
     });
   };
-  fill(document.getElementById("type"), types);
   fill(document.getElementById("country"), countries);
   fill(document.getElementById("theme"), themes);
   fill(document.getElementById("format"), formats);
 }
 
+function populateCategoryTabs(events){
+  const present = new Set(events.map(e => typeClass(e.type)));
+  const categories = CATEGORY_ORDER.filter(c => present.has(c));
+
+  if(!activeCategory || !present.has(activeCategory)){
+    activeCategory = categories[0] || "type-event";
+  }
+
+  const container = document.getElementById("tabs-primary");
+  container.innerHTML = "";
+  categories.forEach(cat=>{
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.role = "tab";
+    btn.setAttribute("aria-selected", cat === activeCategory ? "true" : "false");
+    btn.textContent = (CATEGORY_META[cat] && CATEGORY_META[cat].label) || cat;
+    btn.addEventListener("click", ()=>{
+      activeCategory = cat;
+      container.querySelectorAll("button").forEach(b=>b.setAttribute("aria-selected","false"));
+      btn.setAttribute("aria-selected","true");
+      render();
+    });
+    container.appendChild(btn);
+  });
+}
+
 function currentFilters(){
   return {
     q: document.getElementById("q").value.trim().toLowerCase(),
-    type: document.getElementById("type").value,
     country: document.getElementById("country").value,
     theme: document.getElementById("theme").value,
     format: document.getElementById("format").value
@@ -472,8 +536,8 @@ function render(){
   const today = new Date(); today.setHours(0,0,0,0);
 
   let events = ALL_EVENTS.filter(e=>{
+    if(typeClass(e.type) !== activeCategory) return false;
     if(f.q && !(e.title.toLowerCase().includes(f.q) || e.description.toLowerCase().includes(f.q))) return false;
-    if(f.type && e.type !== f.type) return false;
     if(f.country && e.country !== f.country) return false;
     if(f.theme && e.theme !== f.theme) return false;
     if(f.format && e.format !== f.format) return false;
@@ -489,6 +553,8 @@ function render(){
       .sort((a,b)=> (b.start||b.end||0) - (a.start||a.end||0));
   }
 
+  const categoryLabel = (CATEGORY_META[activeCategory] && CATEGORY_META[activeCategory].label) || "items";
+
   status.textContent = events.length
     ? `${events.length} item${events.length===1?"":"s"}`
     : "Nothing matches right now.";
@@ -498,8 +564,8 @@ function render(){
     const li = document.createElement("li");
     li.className = "empty-state";
     li.textContent = activeTab === "upcoming"
-      ? "Nothing open or upcoming yet. Check back soon, or adjust the filters above."
-      : "No past or closed items match these filters.";
+      ? `No open or upcoming ${categoryLabel.toLowerCase()} yet. Check back soon, or adjust the filters above.`
+      : `No past or closed ${categoryLabel.toLowerCase()} match these filters.`;
     list.appendChild(li);
     return;
   }
@@ -566,7 +632,7 @@ function render(){
 }
 
 function wireControls(){
-  ["q","type","country","theme","format"].forEach(id=>{
+  ["q","country","theme","format"].forEach(id=>{
     document.getElementById(id).addEventListener("input", render);
     document.getElementById(id).addEventListener("change", render);
   });
@@ -596,6 +662,7 @@ function loadEvents(){
       const rows = results.data.filter(r => (r["Event title"] || "").trim() !== "");
       ALL_EVENTS = rows.map(fieldsFromRow);
       populateFilterOptions(ALL_EVENTS);
+      populateCategoryTabs(ALL_EVENTS);
       render();
     },
     error: function(err){
