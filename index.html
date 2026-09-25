@@ -10,21 +10,24 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <style>
   :root{
-    --bg:#FBFAF7;
-    --ink:#17242A;
-    --muted:#5B6A6D;
-    --line:#DEDAD0;
-    --teal:#0F6E5C;
-    --teal-ink:#0B4F42;
-    --teal-wash:rgba(15,110,92,0.07);
-    --ochre:#A6743D;
-    --ochre-wash:rgba(166,116,61,0.08);
-    --slate:#3B5BA5;
-    --slate-wash:rgba(59,91,165,0.07);
-    --plum:#6B5B7A;
-    --plum-wash:rgba(107,91,122,0.08);
+    /* Structure + text */
+    --bg:#FBF8F2;
+    --ink:#202B3D;
+    --muted:rgba(32,43,61,0.62);
+    --line:rgba(32,43,61,0.16);
     --card-bg:#FFFFFF;
-    --focus:#1857A8;
+    --focus:#5B67CA;
+    --ink-wash:rgba(32,43,61,0.06);
+
+    /* Accent hues — one per Area of Change, reserved for the Theme tag only */
+    --coral:#EF6F53;
+    --coral-wash:rgba(239,111,83,0.12);
+    --accent-teal:#21A897;
+    --accent-teal-wash:rgba(33,168,151,0.12);
+    --amber:#F2A93B;
+    --amber-wash:rgba(242,169,59,0.15);
+    --indigo:#5B67CA;
+    --indigo-wash:rgba(91,103,202,0.12);
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
@@ -34,7 +37,7 @@
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     line-height:1.5;
   }
-  a{color:var(--teal-ink);}
+  a{color:var(--ink);}
   a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible{
     outline:3px solid var(--focus);
     outline-offset:2px;
@@ -99,7 +102,7 @@
     font:inherit;
     font-size:.9rem;
     font-weight:700;
-    background:#fff;
+    background:var(--card-bg);
     border:1.5px solid var(--line);
     border-radius:100px;
     padding:.5rem 1.05rem;
@@ -107,7 +110,7 @@
     color:var(--muted);
   }
   .tabs-primary button[aria-selected="true"]{
-    color:#fff;
+    color:var(--bg);
     border-color:var(--ink);
     background:var(--ink);
   }
@@ -137,8 +140,9 @@
   }
   .tabs button[aria-selected="true"]{
     color:var(--ink);
-    border-bottom-color:var(--teal);
+    border-bottom-color:var(--ink);
   }
+  .tabs.hidden{display:none;}
 
   ul.event-list{list-style:none;margin:0 -1rem;padding:0;}
   .event-row{
@@ -153,7 +157,7 @@
   @media (prefers-reduced-motion:no-preference){
     .event-row{transition:background-color .15s ease;}
   }
-  .event-row:hover{background:#F5F2EA;}
+  .event-row:hover{background:var(--ink-wash);}
 
   /* ---------- Date stamp (fixed-date items) ---------- */
   .datestamp{
@@ -165,7 +169,7 @@
     font-size:.72rem;
     font-weight:700;
     letter-spacing:.04em;
-    color:var(--teal-ink);
+    color:var(--ink);
   }
   .datestamp .day{
     font-family:"Source Serif 4",Georgia,serif;
@@ -184,8 +188,8 @@
     font-size:.62rem;
     font-weight:700;
     letter-spacing:.03em;
-    color:#fff;
-    background:var(--slate);
+    color:var(--bg);
+    background:var(--ink);
     padding:.2rem .38rem;
     border-radius:3px;
     margin-bottom:.3rem;
@@ -209,7 +213,7 @@
     height:34px;
     margin:0 auto;
     border-radius:6px;
-    background:#F0EEE7;
+    background:var(--ink-wash);
     color:var(--muted);
   }
 
@@ -245,12 +249,15 @@
     white-space:nowrap;
     background:transparent;
   }
-  .tag.type-event{color:var(--teal-ink);border-color:var(--teal);background:var(--teal-wash);}
-  .tag.type-report{color:var(--slate);border-color:var(--slate);background:var(--slate-wash);}
-  .tag.type-cfp{color:var(--ochre);border-color:var(--ochre);background:var(--ochre-wash);}
-  .tag.type-other{color:var(--plum);border-color:var(--plum);background:var(--plum-wash);}
-  .tag.theme{color:var(--ochre);border-color:var(--ochre);}
+  /* Type is conveyed by the primary tab already, so it stays neutral/structural */
   .tag.format{color:var(--muted);}
+
+  /* Theme (Area of Change) is the one place color carries meaning */
+  .tag.theme{font-weight:700;}
+  .tag.theme.theme-coral{color:var(--coral);border-color:var(--coral);background:var(--coral-wash);}
+  .tag.theme.theme-teal{color:var(--accent-teal);border-color:var(--accent-teal);background:var(--accent-teal-wash);}
+  .tag.theme.theme-amber{color:var(--amber);border-color:var(--amber);background:var(--amber-wash);}
+  .tag.theme.theme-indigo{color:var(--indigo);border-color:var(--indigo);background:var(--indigo-wash);}
 
   .event-main p.desc{
     margin:.3rem 0 .7rem;
@@ -283,11 +290,11 @@
   }
   .btn svg{flex:0 0 auto;}
   .btn-primary{
-    background:var(--teal);
-    color:#fff;
-    border:1.5px solid var(--teal);
+    background:var(--ink);
+    color:var(--bg);
+    border:1.5px solid var(--ink);
   }
-  .btn-primary:hover{background:var(--teal-ink);border-color:var(--teal-ink);}
+  .btn-primary:hover{opacity:.85;}
   .btn-primary:focus-visible{outline-color:var(--focus);}
 
   .poster-thumb{
@@ -303,7 +310,7 @@
     display:block;
     transition:border-color .15s ease;
   }
-  .poster-thumb a:hover img{border-color:var(--teal);}
+  .poster-thumb a:hover img{border-color:var(--ink);}
 
   .empty-state{
     padding:2.5rem 0;
@@ -345,7 +352,7 @@
     <select id="format"><option value="">All formats</option></select>
   </div>
 
-  <div class="tabs" role="tablist" aria-label="Timing">
+  <div class="tabs" role="tablist" aria-label="Timing" id="timing-tabs">
     <button role="tab" id="tab-upcoming" aria-selected="true" aria-controls="panel-events">Open / Upcoming</button>
     <button role="tab" id="tab-past" aria-selected="false" aria-controls="panel-events">Past / Closed</button>
   </div>
@@ -418,6 +425,20 @@ const CATEGORY_META = {
 };
 const CATEGORY_ORDER = ["type-event","type-cfp","type-report","type-other"];
 
+// Reports have no open/close window — the timing sub-tabs don't apply to them.
+const CATEGORIES_WITHOUT_TIMING = ["type-report"];
+
+// The 4 accent hues are reserved for Theme (Area of Change) tags only.
+// Any theme text maps consistently to one of the 4 — same theme, same color,
+// every time — without needing to hardcode each Area of Change by name.
+const THEME_COLOR_CLASSES = ["theme-coral","theme-teal","theme-amber","theme-indigo"];
+function themeColorClass(themeText){
+  const s = (themeText || "").trim().toLowerCase();
+  let hash = 0;
+  for(let i=0; i<s.length; i++){ hash = (hash * 31 + s.charCodeAt(i)) >>> 0; }
+  return THEME_COLOR_CLASSES[hash % THEME_COLOR_CLASSES.length];
+}
+
 function fieldsFromRow(row){
   return {
     type: (row["Type"] || "").trim() || "Other",
@@ -484,10 +505,18 @@ function populateCategoryTabs(events){
       activeCategory = cat;
       container.querySelectorAll("button").forEach(b=>b.setAttribute("aria-selected","false"));
       btn.setAttribute("aria-selected","true");
+      updateTimingTabsVisibility();
       render();
     });
     container.appendChild(btn);
   });
+
+  updateTimingTabsVisibility();
+}
+
+function updateTimingTabsVisibility(){
+  const timingTabs = document.getElementById("timing-tabs");
+  timingTabs.classList.toggle("hidden", CATEGORIES_WITHOUT_TIMING.includes(activeCategory));
 }
 
 function currentFilters(){
@@ -514,7 +543,12 @@ function render(){
     return true;
   });
 
-  if(activeTab === "upcoming"){
+  const timingApplies = !CATEGORIES_WITHOUT_TIMING.includes(activeCategory);
+
+  if(!timingApplies){
+    // Reports have no open/close window — show everything, newest first.
+    events = events.sort((a,b)=> (b.start||b.end||0) - (a.start||a.end||0));
+  } else if(activeTab === "upcoming"){
     // Open/Upcoming: no end date at all, OR end date is today or later.
     events = events.filter(e => !e.end || e.end >= today)
       .sort((a,b)=> (a.start||a.end||0) - (b.start||b.end||0));
@@ -533,9 +567,11 @@ function render(){
   if(events.length === 0){
     const li = document.createElement("li");
     li.className = "empty-state";
-    li.textContent = activeTab === "upcoming"
-      ? `No open or upcoming ${categoryLabel.toLowerCase()} yet. Check back soon, or adjust the filters above.`
-      : `No past or closed ${categoryLabel.toLowerCase()} match these filters.`;
+    li.textContent = !timingApplies
+      ? `No ${categoryLabel.toLowerCase()} match these filters.`
+      : activeTab === "upcoming"
+        ? `No open or upcoming ${categoryLabel.toLowerCase()} yet. Check back soon, or adjust the filters above.`
+        : `No past or closed ${categoryLabel.toLowerCase()} match these filters.`;
     list.appendChild(li);
     return;
   }
@@ -583,7 +619,7 @@ function render(){
         <div class="tags">
           ${activeCategory === "type-other" ? `<span class="tag ${typeClass(e.type)}">${escapeHtml(e.type)}</span>` : ""}
           ${e.format ? `<span class="tag format">${escapeHtml(e.format)}</span>` : ""}
-          ${e.theme ? `<span class="tag theme">${escapeHtml(e.theme)}</span>` : ""}
+          ${e.theme ? `<span class="tag theme ${themeColorClass(e.theme)}">${escapeHtml(e.theme)}</span>` : ""}
           ${e.country ? `<span class="tag">${escapeHtml(e.country)}</span>` : ""}
         </div>
         <p class="event-meta-line">
